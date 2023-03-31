@@ -3,7 +3,9 @@ function calculate(){
     const price = document.getElementById("price").value;
     const discount = document.getElementById("discount").value;
     const qty = document.getElementById("qty").value
-    const buy = purchase(title, price, discount, qty);
+    const term = document.getElementById("credit").value
+    const interest = document.getElementById("interest").value
+    const buy = purchase(title, price, discount, qty, term, interest);
 
     if(buy.status === "true") {
         let purchased = buy.data;
@@ -16,6 +18,11 @@ function calculate(){
             <p>Tax: ${purchased.tax}%</p>
             <p>Price After Tax: ${purchased.afterTax}</p>
             <p>Total: ${purchased.totalPrice}</p>
+            <p>Total After Interest: ${purchased.totalFinal}</p>
+            <p>Credit Due:</p>
+            <ul>
+                ${purchased.creditDue.map(credit => `<li>Month ${credit.term}: ${credit.credit}</li>`).join('')}
+            </ul>
         `;
         document.getElementById("stock-left").innerHTML = `
             <p>Stock Left: ${purchased.stockLeft}</p>
@@ -27,7 +34,7 @@ function calculate(){
     }
 }
 
-function purchase(title, price, discount, qty){
+function purchase(title, price, discount, qty, term, interest){
     const tax = 10;
     const stock = 100;
 
@@ -58,6 +65,14 @@ function purchase(title, price, discount, qty){
         }
     }
 
+    totalFinal = (totalPrice*(1+(interest/100))**term).toFixed(2)
+    creditPerMonth = (totalFinal/term).toFixed(2)
+
+    const creditDue = Array.from({length: term}, (v, i) => ({
+        term : i+1,
+        credit : creditPerMonth
+    }))
+
     return {
         status : "true",
         message : "Purchased Succesfully",
@@ -70,7 +85,9 @@ function purchase(title, price, discount, qty){
             afterTax : afterTax,
             stock : stock,
             stockLeft : stockLeft,
-            totalPrice : totalPrice
+            totalPrice : totalPrice,
+            totalFinal : totalFinal,
+            creditDue : creditDue
         }
     }
 }
